@@ -12,6 +12,7 @@ from pyparsing import Literal, CaselessLiteral, Word, Combine, Group, Optional, 
     ZeroOrMore, Forward, nums, alphas
 import math
 import operator
+import logging
 
 exprStack = []
 
@@ -86,8 +87,6 @@ fn = {"trunc": lambda a: int(a),
 for method in math_method:
     fn[method] = getattr(math, method)
 
-print fn
-
 def evaluateStack(s):
     op = s.pop()
     if op == 'unary -':
@@ -101,7 +100,7 @@ def evaluateStack(s):
     elif op in fn:
         return fn[op](evaluateStack(s))
     elif op[0].isalpha():
-        print("Warning : Couldn't evaluate : " + op)
+        logging.warn("Warning : Couldn't evaluate : " + op)
         return 0
     else:
         return float(op)
