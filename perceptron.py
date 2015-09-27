@@ -13,7 +13,7 @@ Options:
   -h --help                      Display this help.
   --slow=<slow>                  Slow down the animation rate [default: 0.01]
   --nb_points=<nb_points>        Number of point use during training session [default: 1000]
-  --nb_trainings=<nb_trainings>   Number of training before displaying final results [default: 3]
+  --nb_trainings=<nb_trainings>  Number of training before displaying final results [default: 3]
 
 Try to determine if a point is upper above a curve without know this curve :)
 """
@@ -63,6 +63,16 @@ class Perceptron(object):
         error = desired - guess
         for i, weight in enumerate(self.weights):
             self.weights[i] += self.learning_control*error*processed_inputs[i];
+
+    def exam(self, inputs, desired):
+        """
+        For each input guess a answer and corrects all of its weights
+        in case of error
+        inputs = a list of n values according to the number of inputs initializes
+        desired = an int representing th answer +1 good and -1 bad
+        """
+        guess, processed_inputs = self.feeding(inputs)
+        error = desired - guess
         return (inputs, 0, guess) if error != 0 else (inputs, 1, guess)
 
 class World:
@@ -124,7 +134,7 @@ class World:
         font = pygame.font.Font(None, 36)
 
         final_accurency = self.final_accurency()
-        final_accurency_text = font.render("Final Accurency:  {0} %".format(final_accurency), 1, RED)
+        final_accurency_text = font.render("Final Accuracy:  {0} %".format(final_accurency), 1, RED)
         end = font.render("END".format(final_accurency), 1, ORANGE)
 
         # display loop
@@ -146,7 +156,7 @@ class World:
 
             #write accurency
             accurency = self.check_accurency()
-            accurency_text = font.render("Accurency:  {0} %".format(accurency), 1, BLACK)
+            accurency_text = font.render("Accuracy:  {0} %".format(accurency), 1, BLACK)
 
             # display all points
             for point in self.displayed_points:
@@ -182,6 +192,6 @@ if __name__ == "__main__":
     for point in training_values:
         for training in range(int(arguments["--nb_trainings"])-1):
             p.train(*point)
-        result = p.train(*point)
+        result = p.exam(*point)
         world.add_result(result)
     world.run()
