@@ -8,14 +8,14 @@ from fparse import fparse
 help = """Perceptron
 
 Usage:
-  perceptron.py [--slow=<slow>] [--nb_points=<nb_points>] [--nb_trainings=<nb_training>] [--training_function=<training_function>]
+  perceptron.py [--slow=<slow>] [--curve=<curve>] [--nb_points=<nb_points>] [--nb_trainings=<nb_training>]
 
 Options:
-  -h --help                      Display this help.
-  --slow=<slow>                  Slow down the animation rate [default: 0.01]
-  --nb_points=<nb_points>        Number of point use during training session [default: 1000]
-  --nb_trainings=<nb_trainings>  Number of training before displaying final results [default: 3]
-  --training_function=<training_function> Expression defining the training curve [default: 100*sin(0.01*x)+10*sin(0.1*x)]
+  -h --help                               Display this help.
+  --slow=<slow>                           Slow down the animation rate [default: 0.01].
+  --nb_points=<nb_points>                 Number of point use during training session [default: 1000].
+  --nb_trainings=<nb_trainings>           Number of training before displaying final results [default: 3].
+  --curve=<curve>                         Expression defining the training curve [default: x].
 
 Try to determine if a point is upper above a curve without know this curve :)
 """
@@ -88,10 +88,6 @@ class World:
         self.slower = float(slower)
         self.previous_time = time.time()
         self.screen = pygame.display.set_mode(dim)
-
-        # TODO : J'arrive pas a faire marche le default string de docopt... ^^'
-        if not training_function:
-            training_function = "100*sin(0.01*x)"
         self.training_function = fparse(training_function)
         pygame.init()
 
@@ -203,7 +199,7 @@ if __name__ == "__main__":
     arguments = docopt(help)
     p = Perceptron(2)
     world = World(nb_points=arguments["--nb_points"], slower=arguments["--slow"],
-                  training_function=arguments["--training_function"])
+                  training_function=arguments["--curve"])
     training_values = world.generate_world()
     for point in training_values:
         for training in range(int(arguments["--nb_trainings"]) - 1):
