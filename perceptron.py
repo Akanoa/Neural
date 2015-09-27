@@ -20,12 +20,6 @@ Options:
 Try to determine if a point is upper above a curve without know this curve :)
 """
 
-def training_curve(x):
-    """
-    Specific training function
-    """
-    return 100*math.sin(0.01*x) + 10*math.sin(0.2*x) + 0.5*x
-
 class Perceptron(object):
     """
     The simplest neural net possible
