@@ -144,7 +144,7 @@ class World:
         end = font.render("END".format(final_accurency), 1, ORANGE)
 
         w, h = self.shifting_point(self.dim)
-        line = [[int(x), int(self.training_function(x=x))] for x in range(-w / 2, w / 2)]
+        line = [self.shifting_point([int(x), int(self.training_function(x=x))]) for x in range(-w / 2, w / 2)]
 
         # display loop
         run = True
@@ -156,8 +156,7 @@ class World:
                     run = False
 
             # draw line
-            for p in line:
-                pygame.draw.circle(self.screen, BLACK, self.shifting_point(p), 1)
+            pygame.draw.lines(self.screen, BLACK, False, line, 1)
 
             # slow down animation
             self.slow_down(self.slower)
