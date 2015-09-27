@@ -143,6 +143,9 @@ class World:
         final_accurency_text = font.render("Final Accuracy:  {0} %".format(final_accurency), 1, RED)
         end = font.render("END".format(final_accurency), 1, ORANGE)
 
+        w, h = self.shifting_point(self.dim)
+        line = [[int(x), int(self.training_function(x=x))] for x in range(-w / 2, w / 2)]
+
         # display loop
         run = True
         while run:
@@ -154,14 +157,13 @@ class World:
 
             # draw line
             w, h = self.shifting_point(self.dim)
-            for x in range(-w / 2, w / 2):
-                pygame.draw.circle(self.screen, BLACK, self.shifting_point([int(x), int(self.training_function(x=x))]),
-                                   1)
+            for p in line:
+                pygame.draw.circle(self.screen, BLACK, self.shifting_point(p), 1)
 
-            #slow down animation
+            # slow down animation
             self.slow_down(self.slower)
 
-            #write accurency
+            # write accurency
             accurency = self.check_accurency()
             accurency_text = font.render("Accuracy:  {0} %".format(accurency), 1, BLACK)
 
@@ -179,7 +181,7 @@ class World:
             self.screen.blit(frame, (0, 0))
             self.screen.blit(final_accurency_text, (20, 20))
             self.screen.blit(accurency_text, (20, 60))
-            if (len(self.displayed_points) == len(self.points)):
+            if len(self.displayed_points) == len(self.points):
                 self.screen.blit(end, (20, 100))
             pygame.display.flip()
 
