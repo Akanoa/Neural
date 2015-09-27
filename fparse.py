@@ -12,6 +12,7 @@ from pyparsing import Literal, CaselessLiteral, Word, Combine, Group, Optional, 
     ZeroOrMore, Forward, nums, alphas
 import math
 import operator
+import logging
 
 exprStack = []
 
@@ -76,15 +77,15 @@ opn = {"+": operator.add,
        "*": operator.mul,
        "/": operator.truediv,
        "^": operator.pow}
-fn = {"sin": math.sin,
-      "cos": math.cos,
-      "tan": math.tan,
-      "e": math.exp,
-      "abs": abs,
-      "trunc": lambda a: int(a),
-      "round": round,
-      "sgn": lambda a: abs(a) > epsilon and cmp(a, 0) or 0}
 
+math_method = [method for method in dir(math) if callable(getattr(math, method))]
+fn = {"trunc": lambda a: int(a),
+      "round": round,
+      "e": math.exp,
+      "ln": math.log10,
+      "sgn": lambda a: abs(a) > epsilon and cmp(a, 0) or 0}
+for method in math_method:
+    fn[method] = getattr(math, method)
 
 def evaluateStack(s):
     op = s.pop()
@@ -99,6 +100,7 @@ def evaluateStack(s):
     elif op in fn:
         return fn[op](evaluateStack(s))
     elif op[0].isalpha():
+        logging.warn("Warning : Couldn't evaluate : " + op)
         return 0
     else:
         return float(op)
