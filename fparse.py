@@ -82,7 +82,6 @@ math_method = [method for method in dir(math) if callable(getattr(math, method))
 fn = {"trunc": lambda a: int(a),
       "round": round,
       "e": math.exp,
-      "ln": math.log10,
       "sgn": lambda a: abs(a) > epsilon and cmp(a, 0) or 0}
 for method in math_method:
     fn[method] = getattr(math, method)
