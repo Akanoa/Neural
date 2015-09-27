@@ -156,7 +156,6 @@ class World:
                     run = False
 
             # draw line
-            w, h = self.shifting_point(self.dim)
             for p in line:
                 pygame.draw.circle(self.screen, BLACK, self.shifting_point(p), 1)
 
