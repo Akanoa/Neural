@@ -7,13 +7,14 @@ from docopt import docopt
 help = """Perceptron
 
 Usage:
-  perceptron.py [--slow=<slow>] [--nb_points=<nb_points>] [--nb_trainings=<nb_training>]
+  perceptron.py [--slow=<slow>] [--nb_points=<nb_points>] [--nb_trainings=<nb_training>] [--curve=<curve>]
 
 Options:
   -h --help                      Display this help.
   --slow=<slow>                  Slow down the animation rate [default: 0.01]
   --nb_points=<nb_points>        Number of point use during training session [default: 1000]
   --nb_trainings=<nb_trainings>  Number of training before displaying final results [default: 3]
+
 
 Try to determine if a point is upper above a curve without know this curve :)
 """
@@ -125,12 +126,13 @@ class World:
         """
         Run the world
         """
-        BLACK = (0,0,0)
-        WHITE = (255,255,255)
-        BLUE  = (0,0,255)
-        RED  = (255,0,0)
+        BLACK  = (0,0,0)
+        WHITE  = (255,255,255)
+        BLUE   = (0,0,255)
+        RED    = (255,0,0)
         ORANGE = (237, 195, 49)
         GREEN  = (0,255,0)
+        GREY   = (212, 210, 210)
         font = pygame.font.Font(None, 36)
 
         final_accurency = self.final_accurency()
@@ -166,6 +168,10 @@ class World:
                 else:
                     pygame.draw.circle(self.screen, GREEN, self.shifting_point(coord), 5, status)
 
+            frame = pygame.Surface((300, 100))
+            frame.set_alpha(200)
+            frame.fill(GREY)
+            self.screen.blit(frame, (0,0))
             self.screen.blit(final_accurency_text, (20, 20))
             self.screen.blit(accurency_text, (20, 60))
             if(len(self.displayed_points) == len(self.points)):
