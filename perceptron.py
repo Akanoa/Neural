@@ -132,6 +132,7 @@ class World:
         RED  = (255,0,0)
         ORANGE = (237, 195, 49)
         GREEN  = (0,255,0)
+        GREY   = (212, 210, 210)
         font = pygame.font.Font(None, 36)
 
         final_accurency = self.final_accurency()
@@ -167,6 +168,10 @@ class World:
                 else:
                     pygame.draw.circle(self.screen, GREEN, self.shifting_point(coord), 5, status)
 
+            frame = pygame.Surface((300, 100))
+            frame.set_alpha(200)
+            frame.fill(GREY)
+            self.screen.blit(frame, (0,0))
             self.screen.blit(final_accurency_text, (20, 20))
             self.screen.blit(accurency_text, (20, 60))
             if(len(self.displayed_points) == len(self.points)):
