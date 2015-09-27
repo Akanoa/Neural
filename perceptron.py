@@ -1,28 +1,23 @@
 import random
 import pygame
 import time
-import math
 from docopt import docopt
+from fparse import fparse
 
 help = """Perceptron
 
 Usage:
-  perceptron.py [--slow=<slow>] [--nb_points=<nb_points>] [--nb_trainings=<nb_training>]
+  perceptron.py [--slow=<slow>] [--nb_points=<nb_points>] [--nb_trainings=<nb_training>] [--training_function=<training_function>]
 
 Options:
-  -h --help                      Display this help.
-  --slow=<slow>                  Slow down the animation rate [default: 0.01]
-  --nb_points=<nb_points>        Number of point use during training session [default: 1000]
-  --nb_trainings=<nb_trainings>  Number of training before displaying final results [default: 3]
+  -h --help                        Display this help.
+  --slow=<slow>                    Slow down the animation rate [default: 0.01]
+  --nb_points=<nb_points>          Number of point use during training session [default: 1000]
+  --nb_trainings=<nb_trainings>    Number of training before displaying final results [default: 3]
+  --training_function=<training_function> Expression defining the training curve [default: 100*sin(0.01*x)+10*sin(0.1*x)]
 
 Try to determine if a point is upper above a curve without know this curve :)
 """
-
-def training_curve(x):
-    """
-    Specific training function
-    """
-    return 100*math.sin(0.01*x) + 10*math.sin(0.2*x) + 0.5*x
 
 class Perceptron(object):
     """
@@ -79,7 +74,7 @@ class World:
     """
     Create a 2D environment to visualize Perceptron behaviors
     """
-    def __init__(self, nb_points=10, dim=(800, 600), slower=0.1):
+    def __init__(self, nb_points=10, dim=(800, 600), slower=0.1, training_function="100*sin(0.01*x)+10*sin(0.1*x)"):
         self.nb_points = int(nb_points)
         self.dim = dim
         self.points = []
@@ -88,6 +83,11 @@ class World:
         self.slower = float(slower)
         self.previous_time = time.time()
         self.screen = pygame.display.set_mode(dim)
+
+        # TODO : J'arrive pas a faire marche le default string de docopt... ^^'
+        if not training_function:
+            training_function = "100*sin(0.01*x)+10*sin(0.1*x)"
+        self.training_function = fparse(training_function)
         pygame.init()
 
     def add_result(self, result):
@@ -149,7 +149,7 @@ class World:
             #draw line
             w, h = self.shifting_point(self.dim)
             for x in range(-w/2, w/2):
-                pygame.draw.circle(self.screen, BLACK, self.shifting_point([int(x), int(training_curve(x))]), 1)
+                pygame.draw.circle(self.screen, BLACK, self.shifting_point([int(x), int(self.training_function(x=x))]), 1)
 
             #slow down animation
             self.slow_down(self.slower)
@@ -180,14 +180,15 @@ class World:
         points = []
         for point in range(self.nb_points):
             point = [random.randrange(-self.dim[0]/2, self.dim[0]/2), random.randrange(-self.dim[1]/2, self.dim[1]/2)]
-            good = 1 if training_curve(point[0]) > point[1] else -1
+            good = 1 if self.training_function(x=point[0]) > point[1] else -1
             points.append((point, good))
         return points
 
 if __name__ == "__main__":
     arguments = docopt(help)
     p = Perceptron(2)
-    world = World(nb_points=arguments["--nb_points"], slower=arguments["--slow"])
+    world = World(nb_points=arguments["--nb_points"], slower=arguments["--slow"],
+                  training_function=arguments["--training_function"])
     training_values = world.generate_world()
     for point in training_values:
         for training in range(int(arguments["--nb_trainings"])-1):
