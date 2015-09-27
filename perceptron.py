@@ -202,6 +202,7 @@ if __name__ == "__main__":
     for point in training_values:
         for training in range(int(arguments["--nb_trainings"]) - 1):
             p.train(*point)
+    for point in training_values:
         result = p.exam(*point)
         world.add_result(result)
     world.run()
