@@ -2,13 +2,17 @@ import random
 import pygame
 import time
 import math
+import cPickle
+import os.path
 from docopt import docopt
 from fparse import fparse
 
 help = """Perceptron
 
 Usage:
-  perceptron.py [--slow=<slow>] [--curve=<curve>] [--nb_points=<nb_points>] [--nb_trainings=<nb_training>]
+  perceptron.py train [--slow=<slow>] [--curve=<curve>] [--nb_points=<nb_points>] [--nb_trainings=<nb_training>] [--save_file=<save_file>]
+  perceptron.py both [--slow=<slow>] [--curve=<curve>] [--nb_points=<nb_points>] [--nb_trainings=<nb_training>] [--save_file=<save_file>]
+  perceptron.py exam [--slow=<slow>] [--curve=<curve>] [--nb_points=<nb_points>] [--save_file=<save_file>]
 
 Options:
   -h --help                               Display this help.
@@ -16,6 +20,7 @@ Options:
   --nb_points=<nb_points>                 Number of point use during training session [default: 1000].
   --nb_trainings=<nb_trainings>           Number of training before displaying final results [default: 3].
   --curve=<curve>                         Expression defining the training curve [default: x].
+  --save_file=<save_file>                 Pickle file to save perceptron trainings.
 
 Try to determine if a point is upper above a curve without know this curve :)
 """
@@ -29,7 +34,7 @@ class Perceptron(object):
     multiply by each weight input
     """
 
-    def __init__(self, n=2):
+    def __init__(self, n=2, save_file=None):
         """
         Constructor initializes perceptron
         n = number of inputs excluding bias
@@ -38,6 +43,8 @@ class Perceptron(object):
         self.weights = [round(random.uniform(-1.0, 1.0), 3) for weight in range(n + 1)]
         # Arbitrary chosen
         self.learning_control = 0.01
+        # save_file used to dump or load perceptron state
+        self.save_file = save_file
 
     def feeding(self, inputs):
         """
@@ -73,6 +80,24 @@ class Perceptron(object):
         error = desired - guess
         return (inputs, 0, guess) if error != 0 else (inputs, 1, guess)
 
+    def load(self):
+        if self.save_file and os.path.isfile(self.save_file):
+            with open(self.save_file, "rb") as fd:
+                weights = cPickle.load(fd)
+                self.weights = weights
+
+    def save(self):
+        if self.save_file:
+            with open(self.save_file, "wb") as fd:
+                cPickle.dump(self.weights, fd)
+
+    def __repr__(self):
+        val = "Weights: "
+        for i, weight in enumerate(self.weights):
+            val += " %s:%s"%(i, weight)
+        val += " c=%s" % (self.learning_control)
+        return val
+
 
 class World:
     """
@@ -87,7 +112,6 @@ class World:
         self.previous_index = 0
         self.slower = float(slower)
         self.previous_time = time.time()
-        self.screen = pygame.display.set_mode(dim)
         self.training_function = fparse(training_function)
         pygame.init()
 
@@ -126,6 +150,7 @@ class World:
         """
         Run the world
         """
+        self.screen = pygame.display.set_mode(self.dim)
         BLACK = (0, 0, 0)
         WHITE = (255, 255, 255)
         BLUE = (0, 0, 255)
@@ -160,6 +185,8 @@ class World:
             # write accurency
             accurency = self.check_accurency()
             accurency_text = font.render("Accuracy:  {0} %".format(accurency), 1, BLACK)
+            # write number of points already displayed
+            points_text = font.render("Points:  {0}/{1} ".format(len(self.displayed_points), len(self.points)), 1, BLACK)
 
             # display all points
             for point in self.displayed_points:
@@ -169,14 +196,15 @@ class World:
                 else:
                     pygame.draw.circle(self.screen, GREEN, self.shifting_point(coord), 5, status)
 
-            frame = pygame.Surface((300, 100))
+            frame = pygame.Surface((350, 170))
             frame.set_alpha(200)
             frame.fill(GREY)
             self.screen.blit(frame, (0, 0))
             self.screen.blit(final_accurency_text, (20, 20))
             self.screen.blit(accurency_text, (20, 60))
+            self.screen.blit(points_text, (20, 100))
             if len(self.displayed_points) == len(self.points):
-                self.screen.blit(end, (20, 100))
+                self.screen.blit(end, (20, 140))
             pygame.display.flip()
 
     def generate_world(self):
@@ -195,14 +223,22 @@ class World:
 
 if __name__ == "__main__":
     arguments = docopt(help)
-    p = Perceptron(2)
+    p = Perceptron(2, save_file=arguments["--save_file"])
     world = World(nb_points=arguments["--nb_points"], slower=arguments["--slow"],
                   training_function=arguments["--curve"])
-    training_values = world.generate_world()
-    for point in training_values:
+    values = world.generate_world()
+    if arguments["train"] or arguments["both"]:
+        p.load()
+        print "training in progress..."
         for training in range(int(arguments["--nb_trainings"]) - 1):
-            p.train(*point)
-    for point in training_values:
-        result = p.exam(*point)
-        world.add_result(result)
-    world.run()
+            for point in values:
+                p.train(*point)
+        p.save()
+        print "End of training"
+
+    if arguments["exam"] or arguments["both"]:
+        p.load()
+        for i,point in enumerate(values):
+            result = p.exam(*point)
+            world.add_result(result)
+        world.run()
