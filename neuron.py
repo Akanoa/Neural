@@ -9,12 +9,19 @@ class Neuron(object):
         """
         Define how many inputs a neuron owns
         """
-        # At first ways weights are initialized to random values
-        self.weights = [round(random.uniform(-1.0, 1.0), 3) for weight in range(nb_inputs)]
         # Arbitrary chosen
         self.learning_control = 0.01
         # Bias
         self.bias = bias
+        # set inputs
+        self.setNbInputs(nb_inputs=nb_inputs)
+
+    def setNbInputs(self, nb_inputs):
+        """
+        Set the neuron number of inputs
+        """
+        # At first ways weights are initialized to random values
+        self.weights = [round(random.uniform(-1.0, 1.0), 3) for weight in range(nb_inputs)]
 
     def activate(self, inputs_sum):
         """

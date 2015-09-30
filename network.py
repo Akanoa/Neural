@@ -45,10 +45,12 @@ class LayeredNetwork(object):
         neuron_id = 0
         layer_id = len(self.layers)
         neurons_on_next_layer = []
+        layers = {}
 
         #create layers and links between them
         for layer in self.layers:
             neurons_on_next_layer_tmp = []
+            layers[layer_id] = []
             for i in range(layer):
                 neuron = Sigmoid(nb_inputs=1)
                 neurons_on_next_layer_tmp.append((neuron, neuron_id))
@@ -57,9 +59,17 @@ class LayeredNetwork(object):
                     "linked_to" : neurons_on_next_layer,
                     "layer" : layer_id,
                 }
+                layers[layer_id].append(neuron)
                 neuron_id += 1
             neurons_on_next_layer = neurons_on_next_layer_tmp[:]
             layer_id -= 1
+
+        #set correct inputs number for each neuron
+        number_on_previous_layer = 1 #set to 1 because if we're at first layer each neuron has 1 input
+        for layer in sorted(layers.keys()):
+            for neuron in layers[layer]:
+                neuron.setNbInputs(number_on_previous_layer)
+            number_on_previous_layer = len(layers[layer])
 
     def draw_network(self):
         """
@@ -68,6 +78,10 @@ class LayeredNetwork(object):
         with open("network.dot", "w") as fd:
             fd.write("digraph {\n")
             for neuron_id in self.neurons.keys():
+                if self.neurons[neuron_id]["layer"] == 1:
+                    fd.write("%s [color=blue];" % (neuron_id,))
+                elif self.neurons[neuron_id]["layer"] == len(self.layers):
+                    fd.write("%s [color=red];" % (neuron_id,))
                 for linked_neuron in self.neurons[neuron_id]["linked_to"]:
                     fd.write("%s -> %s;\n" % (neuron_id, linked_neuron[1]))
                 if not self.neurons[neuron_id]["linked_to"]:
